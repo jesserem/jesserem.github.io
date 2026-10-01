@@ -16,7 +16,11 @@ gem "github-pages", group: :jekyll_plugins
 
 # gem "jekyll"
 
-gem "wdm", "~> 0.1.0" if Gem.win_platform?
+gem "wdm", "~> 0.2.0" if Gem.win_platform?
+
+# Windows and JRuby ship no zoneinfo database, so tzinfo needs the data gem.
+# Without it, Jekyll aborts with TZInfo::DataSourceNotFound on startup.
+gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # If you have any plugins, put them here!
 group :jekyll_plugins do
