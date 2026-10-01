@@ -17,3 +17,4 @@ For an industrial audience this reverses the usual order of operations: rather t
 **Links**
 - Session: [Smart Industry track, ICT.OPEN 2026](https://ictopen.nl/programme-items/smart-industry)
 - Paper: [*Generalizing Beyond Suboptimality*, TMLR 2026](/publication/cdqac-2026)
+- Project page: [jesserem.github.io/cdqac](/cdqac/)

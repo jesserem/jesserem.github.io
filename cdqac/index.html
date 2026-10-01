@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDQAC: Offline RL for Job Shop Scheduling from Random Solutions</title>
+<meta name="description" content="CDQAC (TMLR 2026): offline reinforcement learning for job shop and flexible job shop scheduling that learns strong policies from random, suboptimal data.">
+<link rel="canonical" href="https://jesserem.github.io/cdqac/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Jesse van Remmerden, Zaharah Bukhsh, Yingqian Zhang">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10161d" media="(prefers-color-scheme: dark)">
+<!-- Google Search Console: paste the HTML-tag verification line here, then verify.
+<meta name="google-site-verification" content="PASTE-YOUR-TOKEN">
+-->
+<link rel="icon" href="static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="static/fonts/archivo-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+
+<!-- Social previews (LinkedIn, X, Bluesky, Slack) -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="CDQAC">
+<meta property="og:title" content="Offline RL learns effective scheduling from random solutions">
+<meta property="og:description" content="CDQAC learns job shop and flexible job shop scheduling policies from a fixed dataset of random solutions and beats policies trained on dispatching-rule or genetic-algorithm data. TMLR 2026.">
+<meta property="og:url" content="https://jesserem.github.io/cdqac/">
+<meta property="og:image" content="https://jesserem.github.io/cdqac/static/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Title card: Offline RL learns effective scheduling from random solutions, CDQAC, TMLR 2026, above an overview of CDQAC in three stages: offline data generation, offline training and schedule construction.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Offline RL learns effective scheduling from random solutions">
+<meta name="twitter:description" content="CDQAC: offline RL for job shop and flexible job shop scheduling that learns strong policies from random, suboptimal data. TMLR 2026.">
+<meta name="twitter:image" content="https://jesserem.github.io/cdqac/static/og-image.png">
+
+<!-- Google Scholar (Highwire Press tags). Keep the title identical to the TMLR version. -->
+<meta name="citation_title" content="Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Solutions">
+<meta name="citation_author" content="van Remmerden, Jesse">
+<meta name="citation_author_institution" content="Eindhoven University of Technology">
+<meta name="citation_author" content="Bukhsh, Zaharah">
+<meta name="citation_author_institution" content="Eindhoven University of Technology">
+<meta name="citation_author" content="Zhang, Yingqian">
+<meta name="citation_author_institution" content="Eindhoven University of Technology">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_journal_title" content="Transactions on Machine Learning Research">
+<meta name="citation_issn" content="2835-8856">
+<meta name="citation_abstract_html_url" content="https://jesserem.github.io/cdqac/">
+<meta name="citation_keywords" content="offline reinforcement learning; job shop scheduling; flexible job shop scheduling; combinatorial optimization; quantile regression; conservative Q-learning">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ScholarlyArticle",
+      "@id": "https://jesserem.github.io/cdqac/#paper",
+      "name": "Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Solutions",
+      "headline": "Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Solutions",
+      "alternateName": [
+        "CDQAC",
+        "Conservative Discrete Quantile Actor-Critic",
+        "Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Data"
+      ],
+      "abstract": "Online reinforcement learning (RL) approaches have demonstrated strong performance on Job Shop Scheduling (JSP) and Flexible JSP (FJSP) problems by learning scheduling policies through direct interaction with simulated environments. However, these methods often require extensive training interactions, limiting their sample efficiency and practical applicability. Motivated by this challenge, we introduce Conservative Discrete Quantile Actor-Critic (CDQAC), an offline RL algorithm that learns effective scheduling policies directly from static, suboptimal datasets. CDQAC couples a quantile-based critic with delayed policy updates to estimate the return distribution of machine-operation pairs. Extensive experiments on JSP and FJSP benchmarks demonstrate that CDQAC consistently outperforms the data-generating heuristics, surpasses state-of-the-art offline and online RL baselines, and is highly sample efficient, requiring only 1 to 5% of the original dataset to learn high-quality policies. Our analysis suggests that, in scheduling, offline RL performance is governed mainly by state-action coverage rather than the quality of individual trajectories. Scheduling couples a dense reward aligned with the makespan objective with equal-length trajectories across heuristics, enabling effective learning from a broad range of behaviors. Consistent with this observation, datasets generated by a simple random heuristic with broader coverage let it outperform policies trained on datasets produced by stronger heuristics such as Genetic Algorithms.",
+      "author": [
+        {"@type": "Person", "@id": "https://jesserem.github.io/cdqac/#author-jesse", "name": "Jesse van Remmerden", "sameAs": "https://scholar.google.com/citations?user=53Qmfec3f8EC", "affiliation": {"@id": "https://www.tue.nl/#org"}},
+        {"@type": "Person", "@id": "https://jesserem.github.io/cdqac/#author-zaharah", "name": "Zaharah Bukhsh", "sameAs": "https://scholar.google.com/citations?user=UqNe4lIAAAAJ", "affiliation": {"@id": "https://www.tue.nl/#org"}},
+        {"@type": "Person", "@id": "https://jesserem.github.io/cdqac/#author-yingqian", "name": "Yingqian Zhang", "sameAs": "https://scholar.google.com/citations?user=7sTIWeYAAAAJ", "affiliation": {"@id": "https://www.tue.nl/#org"}}
+      ],
+      "datePublished": "2026-08",
+      "inLanguage": "en",
+      "isPartOf": {"@type": "Periodical", "name": "Transactions on Machine Learning Research", "issn": "2835-8856"},
+      "url": "https://jesserem.github.io/cdqac/",
+      "mainEntityOfPage": "https://jesserem.github.io/cdqac/",
+      "sameAs": ["https://openreview.net/forum?id=4vVhm4817Q", "https://arxiv.org/abs/2509.10303"],
+      "image": ["https://jesserem.github.io/cdqac/static/og-image.png", "https://jesserem.github.io/cdqac/static/figures/cdqac-offline-rl-scheduling-overview-1408.webp"],
+      "keywords": ["offline reinforcement learning", "offline RL", "job shop scheduling", "flexible job shop scheduling", "JSP", "FJSP", "combinatorial optimization", "neural combinatorial optimization", "quantile critic", "conservative Q-learning", "learning from suboptimal data", "dispatching rules"],
+      "about": [
+        {"@type": "Thing", "name": "Offline reinforcement learning"},
+        {"@type": "Thing", "name": "Job-shop scheduling", "sameAs": "https://en.wikipedia.org/wiki/Job-shop_scheduling"},
+        {"@type": "Thing", "name": "Flexible job shop scheduling"}
+      ],
+      "encoding": {"@type": "MediaObject", "contentUrl": "https://arxiv.org/pdf/2509.10303", "encodingFormat": "application/pdf"}
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://jesserem.github.io/cdqac/#code",
+      "name": "CDQAC_scheduling",
+      "description": "Official PyTorch implementation of CDQAC, offline reinforcement learning for job shop and flexible job shop scheduling, with offline RL baselines (behavior cloning, IQL, TD3-AWR, Offline-LD).",
+      "codeRepository": "https://github.com/jesserem/CDQAC_scheduling",
+      "programmingLanguage": "Python",
+      "license": "https://opensource.org/licenses/MIT",
+      "author": [{"@id": "https://jesserem.github.io/cdqac/#author-jesse"}, {"@id": "https://jesserem.github.io/cdqac/#author-zaharah"}, {"@id": "https://jesserem.github.io/cdqac/#author-yingqian"}],
+      "citation": {"@id": "https://jesserem.github.io/cdqac/#paper"}
+    },
+    {
+      "@type": "Dataset",
+      "@id": "https://jesserem.github.io/cdqac/#data",
+      "name": "CDQAC offline RL datasets for job shop and flexible job shop scheduling",
+      "description": "Offline reinforcement learning datasets for the job shop scheduling problem (JSP) and the flexible job shop scheduling problem (FJSP): generated instances with solutions from priority dispatching rules, a genetic algorithm, uniformly random dispatching and epsilon-greedy dispatching rules, stored as action sequences, plus evaluation instances and pretrained CDQAC checkpoints.",
+      "url": "https://huggingface.co/datasets/jesserem/cdqac_datasets",
+      "sameAs": "https://huggingface.co/datasets/jesserem/cdqac_datasets",
+      "license": "https://opensource.org/licenses/MIT",
+      "isAccessibleForFree": true,
+      "creator": [{"@id": "https://jesserem.github.io/cdqac/#author-jesse"}, {"@id": "https://jesserem.github.io/cdqac/#author-zaharah"}, {"@id": "https://jesserem.github.io/cdqac/#author-yingqian"}],
+      "keywords": ["offline reinforcement learning", "job shop scheduling", "flexible job shop scheduling", "scheduling dataset", "dispatching rules", "genetic algorithm"],
+      "citation": {"@id": "https://jesserem.github.io/cdqac/#paper"}
+    },
+    {
+      "@type": "CollegeOrUniversity",
+      "@id": "https://www.tue.nl/#org",
+      "name": "Eindhoven University of Technology",
+      "alternateName": "TU/e",
+      "url": "https://www.tue.nl/"
+    }
+  ]
+}
+</script>
+
+<style>
+@font-face {
+  font-family: "Archivo";
+  src: url("static/fonts/archivo-latin-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --measure: clamp(44rem, 22.4rem + 45vw, 68rem);   /* one column for text, figures, tables and code; grows on large screens */
+  --gutter: clamp(1rem, 4vw, 1.5rem);
+  --plane: #ffffff;
+  --panel: #f3f5f8;
+  --ink: #172536;
+  --ink-2: #3f4e60;
+  --muted: #66707c;
+  --rule: #dde2e8;
+  --rule-strong: #c3ccd6;
+  --link: #1f5fbf;
+  --heur: #898781;             /* data made by heuristics: de-emphasis gray */
+  --m-greedy: #6da7ec;         /* CDQAC, greedy decoding */
+  --m-sample: #1c5cab;         /* CDQAC, sampling */
+  --track: #e3e6ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plane: #10161d;
+    --panel: #18212b;
+    --ink: #e6ecf2;
+    --ink-2: #b3bfcc;
+    --muted: #8f9aa6;
+    --rule: #26313c;
+    --rule-strong: #3a4756;
+    --link: #8ab8f5;
+    --heur: #898781;
+    --m-greedy: #2a78d6;
+    --m-sample: #86b6ef;
+    --track: #2a3440;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 1rem; }
+body {
+  margin: 0;
+  background: var(--plane);
+  color: var(--ink);
+  font-family: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: clamp(1.03rem, 0.9rem + 0.36vw, 1.25rem);
+  font-weight: 400;
+  font-stretch: 100%;
+  line-height: 1.64;
+  font-kerning: normal;
+  overflow-wrap: break-word;
+}
+.wrap { max-width: calc(var(--measure) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
+h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.1; text-wrap: balance; }
+h2 {
+  font-stretch: 82%;
+  font-size: clamp(1.55rem, 1.1rem + 1.3vw, 2.4rem);
+  letter-spacing: -0.005em;
+  margin: clamp(3.2rem, 7vw, 4.5rem) 0 1rem;
+}
+h3 { font-stretch: 90%; font-size: clamp(1.15rem, 1rem + 0.35vw, 1.4rem); font-weight: 650; margin: 2.2rem 0 0.45rem; }
+p { margin: 0 0 1rem; }
+strong { font-weight: 650; }
+sub, sup { font-size: 0.75em; line-height: 0; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Header */
+.site {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 0.4rem 1.5rem; padding: 1.1rem 0; border-bottom: 1px solid var(--rule);
+}
+.wordmark { color: var(--ink); text-decoration: none; font-weight: 800; font-stretch: 75%; font-size: 1.3rem; letter-spacing: 0.01em; }
+.site nav { display: flex; flex-wrap: wrap; gap: 0.15rem 1.05rem; font-size: 0.93rem; }
+.site nav a { color: var(--ink-2); text-decoration: none; }
+.site nav a:hover { color: var(--ink); text-decoration: underline; }
+
+/* Hero */
+.hero { padding: clamp(2rem, 6vw, 3.2rem) 0 0; }
+.venue { margin: 0 0 0.9rem; color: var(--ink-2); font-size: 0.96em; }
+h1 {
+  font-stretch: 72%;
+  font-size: clamp(2rem, 1rem + 3.3vw, 4.1rem);
+  line-height: 1.03;
+  letter-spacing: -0.01em;
+}
+.authors { margin: 1.3rem 0 0; font-size: 1.04em; }
+.authors a { color: var(--ink); }
+.affil { display: block; color: var(--ink-2); font-size: 0.94em; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0; }
+.btn {
+  display: inline-flex; align-items: center; min-height: 2.6rem; padding: 0.45rem 0.95rem;
+  border: 1px solid var(--rule-strong); border-radius: 6px; background: transparent;
+  color: var(--ink); font: inherit; font-weight: 600; font-stretch: 92%; font-size: 0.96rem;
+  text-decoration: none; cursor: pointer;
+}
+.btn:hover { border-color: var(--ink); text-decoration: none; }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--plane); }
+
+/* Figures share the text column */
+figure { margin: 2rem 0 0; }
+figcaption { margin-top: 0.9rem; color: var(--ink-2); font-size: 0.86em; line-height: 1.5; }
+
+/* Paper figures */
+.hero-fig { margin-top: clamp(2.2rem, 5vw, 3rem); }
+.paper-fig img { display: block; width: 100%; height: auto; }
+.fig-open { display: block; }
+@media (prefers-color-scheme: dark) {
+  .fig-open { background: #ffffff; border-radius: 8px; padding: 0.6rem; }
+}
+
+/* Summary */
+.lead { margin: clamp(2.4rem, 6vw, 3.2rem) 0 0; }
+.lead p { font-size: clamp(1.1rem, 0.95rem + 0.5vw, 1.45rem); line-height: 1.55; }
+.abstract p { color: var(--ink-2); }
+
+/* Lists in prose */
+.props { padding-left: 1.2rem; margin: 0 0 1rem; }
+.props li { margin-bottom: 0.55rem; }
+
+/* Charts */
+.chart-title { margin: 0 0 0.6rem; font-weight: 650; font-stretch: 92%; font-size: 1rem; line-height: 1.35; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; list-style: none; margin: 0 0 0.9rem; padding: 0; font-size: 0.88rem; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.sw { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--c); flex: none; }
+.c-heur { --c: var(--heur); }
+.c-greedy { --c: var(--m-greedy); }
+.c-sample { --c: var(--m-sample); }
+
+.dp-fig { position: relative; }
+.dp { container-type: inline-size; }
+.dp-row, .dp-axis { display: grid; grid-template-columns: 6.4rem 1fr; }
+.dp-name { align-self: center; font-weight: 600; font-stretch: 92%; font-size: 0.93rem; }
+.dp-plot {
+  position: relative; height: 2.9rem;
+  background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px);
+  background-size: calc(100% / 6) 100%;
+  border-right: 1px solid var(--rule);
+}
+.dp-row.story .dp-plot { height: 4.2rem; }
+.dp-row.story .dp-name, .dp-row.story .dp-track, .dp-row.story .dp-dot { transform: translateY(0.65rem); }
+.dp-track {
+  position: absolute; top: 50%; height: 2px; margin-top: -1px;
+  left: calc(var(--a) / 30 * 100%);
+  width: calc((var(--b) - var(--a)) / 30 * 100%);
+  background: var(--track);
+}
+.dp-dot {
+  position: absolute; top: 50%; left: calc(var(--v) / 30 * 100%);
+  width: 24px; height: 24px; margin: -12px 0 0 -12px; padding: 0;
+  border: 0; background: transparent; cursor: default;
+}
+.dp-dot::before {
+  content: ""; position: absolute; inset: 6px; border-radius: 50%;
+  background: var(--c); box-shadow: 0 0 0 2px var(--plane);
+  transition: transform 120ms ease-out;
+}
+.dp-dot:hover::before, .dp-dot:focus-visible::before { transform: scale(1.3); }
+.dp-dot:focus-visible { outline-offset: 0; border-radius: 50%; }
+.dp-lbl {
+  position: absolute; top: 0.2rem; left: calc(var(--v) / 30 * 100%); transform: translateX(-50%);
+  font-size: 0.8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.dp-lbl.end { transform: translateX(calc(-100% + 0.55rem)); }
+.dp-ticks { position: relative; height: 1.5rem; border-top: 1px solid var(--rule-strong); }
+.dp-ticks span {
+  position: absolute; top: 0.3rem; left: calc(var(--t) / 30 * 100%); transform: translateX(-50%);
+  font-size: 0.74rem; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.dp-ticks span:first-child { transform: none; }
+.dp-ticks span:last-child { transform: translateX(-100%); }
+.dp-axis-title { grid-column: 2; margin: 0.35rem 0 0; font-size: 0.82rem; color: var(--ink-2); }
+@container (max-width: 30rem) {
+  .dp-row, .dp-axis { grid-template-columns: 4.9rem 1fr; }
+  .dp-name { font-size: 0.84rem; }
+  .dp-lbl { font-size: 0.72rem; }
+}
+@container (max-width: 19.5rem) {
+  .dp-lbl.mid { display: none; }
+}
+.dp-tip {
+  position: absolute; z-index: 5; transform: translate(-50%, calc(-100% - 8px));
+  display: grid; gap: 0.05rem; padding: 0.45rem 0.65rem; border-radius: 6px;
+  background: var(--ink); color: var(--plane); font-size: 0.8rem; line-height: 1.3;
+  white-space: nowrap; pointer-events: none;
+}
+.dp-tip strong { font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+.dp-tip[hidden] { display: none; }
+
+.bars { container-type: inline-size; display: grid; gap: 0.5rem; }
+.bar-row { display: grid; grid-template-columns: 6.4rem 1fr; align-items: center; }
+.bar-name { font-weight: 600; font-stretch: 92%; font-size: 0.93rem; }
+.bar-track { position: relative; height: 1.1rem; }
+.bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: calc(var(--v) / 10 * 100%); background: var(--heur); border-radius: 0 4px 4px 0;
+}
+.bar-val {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  left: calc(var(--v) / 10 * 100% + 0.45rem);
+  font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2);
+}
+@container (max-width: 30rem) {
+  .bar-row { grid-template-columns: 4.9rem 1fr; }
+  .bar-name { font-size: 0.84rem; }
+}
+
+/* Tables fill the column and wrap instead of scrolling */
+.table-wrap { container-type: inline-size; overflow-x: auto; margin: 1.4rem 0 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88em; line-height: 1.35; }
+th, td { text-align: right; padding: 0.45rem 0 0.45rem 0.9rem; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; vertical-align: top; }
+th:first-child, td:first-child { text-align: left; padding-left: 0; }
+thead th { font-weight: 650; font-stretch: 92%; color: var(--ink-2); border-bottom: 1px solid var(--rule-strong); vertical-align: bottom; }
+tbody th { font-weight: 600; }
+td .m { color: var(--ink-2); white-space: nowrap; }
+tr.ours th, tr.ours td { font-weight: 700; }
+table.jsp th:nth-child(2), table.jsp td:nth-child(2) { text-align: left; color: var(--ink-2); }
+@container (max-width: 30rem) {
+  table { font-size: 0.82rem; }
+  th, td { padding-left: 0.55rem; }
+}
+@container (max-width: 22rem) {
+  table { font-size: 0.78rem; }
+  th, td { padding-left: 0.4rem; }
+  td .m { display: block; font-size: 0.72rem; }
+}
+@container (max-width: 17.5rem) {
+  table { font-size: 0.72rem; }
+  th, td { padding-left: 0.3rem; }
+}
+.note { color: var(--ink-2); font-size: 0.86em; }
+
+/* Code wraps so nothing scrolls sideways on phones */
+pre {
+  margin: 1.2rem 0 0; padding: 1rem 1.1rem; border-radius: 8px;
+  background: var(--panel); color: var(--ink); font-size: 0.8em; line-height: 1.55;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+.cite-actions { margin: 0.8rem 0 0; }
+
+/* FAQ */
+.faq h3 { margin-top: 1.9rem; }
+
+/* Related work */
+.refs { padding-left: 1.2rem; }
+.refs li { margin-bottom: 0.9rem; }
+.refs .meta { color: var(--ink-2); }
+
+footer { margin: 5rem 0 0; padding: 1.6rem 0 2.6rem; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 0.9rem; }
+footer p { margin: 0 0 0.3rem; }
+
+@media print {
+  .site nav, .actions, .cite-actions { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="site">
+  <a class="wordmark" href="#top">CDQAC</a>
+  <nav aria-label="On this page">
+    <a href="#method">Method</a>
+    <a href="#why-random-data">Why random data</a>
+    <a href="#results">Results</a>
+    <a href="#code-and-data">Code and data</a>
+    <a href="#faq">FAQ</a>
+    <a href="#cite">Cite</a>
+  </nav>
+</header>
+
+<main id="top">
+<section class="hero" aria-labelledby="title">
+  <p class="venue">Transactions on Machine Learning Research (TMLR), 2026</p>
+  <h1 id="title">Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Solutions</h1>
+  <p class="authors">
+    <a href="https://scholar.google.com/citations?user=53Qmfec3f8EC">Jesse van Remmerden</a>, <a href="https://scholar.google.com/citations?user=UqNe4lIAAAAJ">Zaharah Bukhsh</a> and <a href="https://scholar.google.com/citations?user=7sTIWeYAAAAJ">Yingqian Zhang</a>
+    <span class="affil">Eindhoven University of Technology (TU/e), the Netherlands</span>
+  </p>
+  <div class="actions">
+    <a class="btn primary" href="https://openreview.net/forum?id=4vVhm4817Q">Read the paper</a>
+    <a class="btn" href="https://arxiv.org/pdf/2509.10303">PDF</a>
+    <a class="btn" href="https://arxiv.org/abs/2509.10303">arXiv</a>
+    <a class="btn" href="https://github.com/jesserem/CDQAC_scheduling">Code</a>
+    <a class="btn" href="https://huggingface.co/datasets/jesserem/cdqac_datasets">Datasets and checkpoints</a>
+    <a class="btn" href="#cite">BibTeX</a>
+  </div>
+
+  <figure class="paper-fig hero-fig" aria-labelledby="fig1-caption">
+    <a class="fig-open" href="static/figures/cdqac-offline-rl-scheduling-overview.svg" target="_blank" rel="noopener" tabindex="-1">
+      <picture>
+        <source media="(max-width: 40rem)" type="image/webp" width="1280" height="4914"
+          srcset="static/figures/cdqac-offline-rl-scheduling-overview-phone-640.webp 640w, static/figures/cdqac-offline-rl-scheduling-overview-phone-1280.webp 1280w"
+          sizes="calc(100vw - 2rem)">
+        <img src="static/figures/cdqac-offline-rl-scheduling-overview-1408.webp"
+          srcset="static/figures/cdqac-offline-rl-scheduling-overview-704.webp 704w, static/figures/cdqac-offline-rl-scheduling-overview-1408.webp 1408w, static/figures/cdqac-offline-rl-scheduling-overview-2112.webp 2112w"
+          sizes="(min-width: 120rem) 68rem, (min-width: 48rem) calc(22.4rem + 45vw), calc(100vw - 3rem)"
+          width="1408" height="547" fetchpriority="high" decoding="async"
+          alt="Overview of CDQAC in three panels: offline data generation, where dispatching rules, a genetic algorithm and a random heuristic solve JSP and FJSP instances into a static dataset; offline training of a dueling quantile critic with a CQL penalty and an actor updated every eta critic steps; and schedule construction, where the trained policy selects feasible machine-operation pairs to build a solution.">
+      </picture>
+    </a>
+    <figcaption id="fig1-caption">CDQAC in three stages. (1) Dispatching rules (PDR), a genetic algorithm (GA) or random dispatching solve JSP and FJSP instances, and their solutions form a static dataset. (2) CDQAC trains a dueling quantile critic with a CQL penalty on batches from that dataset and updates the actor only every η critic steps. (3) The trained policy builds a schedule by choosing feasible machine–operation pairs one at a time. <a href="static/figures/cdqac-offline-rl-scheduling-overview.svg" target="_blank" rel="noopener">Open the figure at full size</a>.</figcaption>
+  </figure>
+</section>
+
+<section class="lead" aria-label="Summary">
+  <p><strong>CDQAC</strong> (Conservative Discrete Quantile Actor-Critic) is an offline reinforcement learning (offline RL) method for the job shop scheduling problem (JSP) and the flexible job shop scheduling problem (FJSP). It learns a dispatching policy from a fixed dataset of existing schedules, without interacting with a simulator during training, and it learns best when those schedules were made by picking actions at random.</p>
+  <p>Trained only on random solutions, CDQAC reaches an average gap of 10.7% with greedy decoding and 5.9% with sampling on the FJSP evaluation sets. That is better than when it is trained on dispatching-rule or genetic-algorithm data, and better than every other offline method tested. It needs only 10 to 25 training instances.</p>
+</section>
+
+<section class="abstract" aria-labelledby="abstract">
+  <h2 id="abstract">Abstract</h2>
+  <p>Online reinforcement learning (RL) approaches have demonstrated strong performance on Job Shop Scheduling (JSP) and Flexible JSP (FJSP) problems by learning scheduling policies through direct interaction with simulated environments. However, these methods often require extensive training interactions, limiting their sample efficiency and practical applicability. Motivated by this challenge, we introduce Conservative Discrete Quantile Actor-Critic (CDQAC), an offline RL algorithm that learns effective scheduling policies directly from static, suboptimal datasets. CDQAC couples a quantile-based critic with delayed policy updates to estimate the return distribution of machine–operation pairs. Extensive experiments on JSP and FJSP benchmarks demonstrate that CDQAC consistently outperforms the data-generating heuristics, surpasses state-of-the-art offline and online RL baselines, and is highly sample efficient, requiring only 1 to 5% of the original dataset to learn high-quality policies. Our analysis suggests that, in scheduling, offline RL performance is governed mainly by state–action coverage rather than the quality of individual trajectories. Scheduling couples a dense reward aligned with the makespan objective with equal-length trajectories across heuristics, enabling effective learning from a broad range of behaviors. Consistent with this observation, datasets generated by a simple random heuristic with broader coverage let it outperform policies trained on datasets produced by stronger heuristics such as Genetic Algorithms.</p>
+</section>
+
+<section aria-labelledby="offline-rl-for-scheduling">
+  <h2 id="offline-rl-for-scheduling">Offline RL for scheduling, without a simulator or expert data</h2>
+  <p>Online reinforcement learning methods for job shop scheduling, such as L2D and DANIEL, learn by interacting with a simulated shop floor, often for millions of steps. That is slow, and a simulator rarely captures every detail of a real factory.</p>
+  <p>Offline RL learns from a fixed dataset instead, for example the schedules a plant has already run. Because it learns what each decision is worth rather than copying the decisions it sees, it can end up better than the data it was trained on. Our earlier method, <a href="https://link.springer.com/article/10.1007/s10994-025-06826-w">Offline-LD</a>, showed that this works for JSP, but it relied on near-optimal solutions from a constraint programming solver, which are expensive to produce and intractable for large instances. CDQAC drops that requirement: it learns strong policies for both JSP and FJSP from suboptimal data, down to schedules made at random.</p>
+</section>
+
+<section id="method" aria-labelledby="how-cdqac-works">
+  <h2 id="how-cdqac-works">How CDQAC works</h2>
+  <p>CDQAC builds a schedule one decision at a time. At every step it looks at the partial schedule and picks a machine–operation pair: which operation runs next, and on which machine. The reward for a step is the negative increase in the partial makespan, so the rewards of a finished schedule add up to exactly minus its makespan.</p>
+
+
+  <h3>Conservative Q-learning keeps unseen actions in check</h3>
+  <p>An offline agent never sees what happens after actions that are missing from its dataset, so a naive critic can overestimate them and the policy will chase those errors. CDQAC adds a Conservative Q-Learning (CQL) penalty that pushes down the value of pairs outside the data.</p>
+
+  <figure class="paper-fig" aria-labelledby="fig2-caption">
+    <a class="fig-open" href="static/figures/cdqac-conservative-q-learning-example.svg" target="_blank" rel="noopener" tabindex="-1">
+      <picture>
+        <source media="(max-width: 40rem)" type="image/webp" width="1280" height="1150"
+          srcset="static/figures/cdqac-conservative-q-learning-example-phone-640.webp 640w, static/figures/cdqac-conservative-q-learning-example-phone-1280.webp 1280w"
+          sizes="calc(100vw - 2rem)">
+        <img src="static/figures/cdqac-conservative-q-learning-example-1408.webp"
+          srcset="static/figures/cdqac-conservative-q-learning-example-704.webp 704w, static/figures/cdqac-conservative-q-learning-example-1408.webp 1408w, static/figures/cdqac-conservative-q-learning-example-2112.webp 2112w"
+          sizes="(min-width: 120rem) 68rem, (min-width: 48rem) calc(22.4rem + 45vw), calc(100vw - 3rem)"
+          width="1408" height="297" loading="lazy" decoding="async"
+          alt="Four panels showing how an offline critic overestimates an action missing from the data: after training on machines M1 and M2, the learned return favors the unseen machine M3, the real return shows that M3 is the worst choice, and with CQL M3 is no longer overestimated.">
+      </picture>
+    </a>
+    <figcaption id="fig2-caption">Why an offline critic needs CQL. The dataset only pairs operation O<sub>i,j</sub> with machine M<sub>1</sub> (reward −3) and M<sub>2</sub> (reward −5). Without CQL, the critic Z<sub>θ</sub> learns that the unseen pair with M<sub>3</sub> is best, while its real return Z<sup>π</sup> is the worst. With CQL, pairs outside the data are no longer valued above the pairs in it. <a href="static/figures/cdqac-conservative-q-learning-example.svg" target="_blank" rel="noopener">Open the figure at full size</a>.</figcaption>
+  </figure>
+
+  <h3>A quantile critic for every machine–operation pair</h3>
+  <p>A Dual Attention Network (DAN) encoder, adapted from DANIEL, embeds the operations and machines. On top of it, the critic predicts a distribution over returns, as a set of quantiles in the style of QR-DQN, for each candidate pair instead of a single value. It uses a dueling design with separate inputs: the value stream sees a global embedding of the schedule, and the advantage stream sees the operation, machine and pair embeddings. That split suits scheduling, where the number of candidate pairs changes at every step.</p>
+
+  <figure class="paper-fig" aria-labelledby="fig3-caption">
+    <a class="fig-open" href="static/figures/cdqac-network-architecture.svg" target="_blank" rel="noopener" tabindex="-1">
+      <img src="static/figures/cdqac-network-architecture-1408.webp"
+        srcset="static/figures/cdqac-network-architecture-704.webp 704w, static/figures/cdqac-network-architecture-1408.webp 1408w, static/figures/cdqac-network-architecture-2112.webp 2112w"
+        sizes="(min-width: 120rem) 68rem, (min-width: 48rem) calc(22.4rem + 45vw), calc(100vw - 3rem)"
+        width="1408" height="897" loading="lazy" decoding="async"
+        alt="CDQAC network architecture: operation and machine features pass through the operation and machine attention blocks of the Dual Attention Network; the resulting embeddings are pooled and concatenated with machine-operation pair features and fed to the dueling quantile network, whose value and advantage networks combine into the return distribution Z-theta.">
+    </a>
+    <figcaption id="fig3-caption">The CDQAC network. Left: the Dual Attention Network (DAN) encodes operations and machines. Right: the dueling quantile network combines a value stream V<sub>θ</sub>, fed with the pooled embeddings, and an advantage stream A<sub>θ</sub>, fed with the operation, machine and pair embeddings, into the return distribution Z<sub>θ</sub>. <a href="static/figures/cdqac-network-architecture.svg" target="_blank" rel="noopener">Open the figure at full size</a>.</figcaption>
+  </figure>
+
+  <h3>Delayed policy updates</h3>
+  <p>The actor, which is the scheduling policy itself, is updated only once every η critic updates. This stops errors in the bootstrapped critic from compounding into the policy. In the ablation study this is the component that matters most, and it matters more on larger instances with larger action spaces.</p>
+</section>
+
+<section id="why-random-data" aria-labelledby="why-random">
+  <h2 id="why-random">Why random data works: coverage beats quality</h2>
+  <p>On standard offline RL benchmarks, expert data beats random data. In scheduling we found the opposite, and traced it to two structural properties:</p>
+  <ul class="props">
+    <li><strong>A dense reward aligned with the objective.</strong> Every decision receives a reward that is a calibrated share of the final makespan, so even a bad schedule tells the critic what each of its steps cost.</li>
+    <li><strong>Equal-length trajectories.</strong> Every heuristic, good or bad, makes exactly one decision per operation, so all trajectories for an instance have the same length and none is favored for being shorter.</li>
+  </ul>
+  <p>With both properties in place, what limits offline RL is state–action coverage: how many different situations and decisions the data contains. A random policy maximizes coverage by construction.</p>
+
+  <figure aria-labelledby="coverage-caption">
+    <p class="chart-title">State–action coverage of each training dataset, relative to the dispatching-rule dataset</p>
+    <div class="bars">
+      <div class="bar-row"><span class="bar-name">Random</span><span class="bar-track"><span class="bar" style="--v:7.70"></span><span class="bar-val" style="--v:7.70">7.70×</span></span></div>
+      <div class="bar-row"><span class="bar-name">PDR + GA</span><span class="bar-track"><span class="bar" style="--v:3.96"></span><span class="bar-val" style="--v:3.96">3.96×</span></span></div>
+      <div class="bar-row"><span class="bar-name">GA</span><span class="bar-track"><span class="bar" style="--v:2.96"></span><span class="bar-val" style="--v:2.96">2.96×</span></span></div>
+      <div class="bar-row"><span class="bar-name">PDR</span><span class="bar-track"><span class="bar" style="--v:1"></span><span class="bar-val" style="--v:1">1.00×</span></span></div>
+    </div>
+    <figcaption id="coverage-caption">State–action coverage (SACo) counts the unique state–action pairs in a dataset. The random dataset contains 7.7 times as many as the priority dispatching rule (PDR) dataset, far more than the genetic algorithm (GA) dataset.</figcaption>
+  </figure>
+
+  <p style="margin-top:1.6rem">The paper tests this explanation directly. Breaking either property, by cutting episodes short or by switching to a sparse or proxy reward, hurts the random dataset the most.</p>
+</section>
+
+<section id="results" aria-labelledby="results-heading">
+  <h2 id="results-heading">Results on job shop and flexible job shop benchmarks</h2>
+
+  <h3>Flexible job shop (FJSP): the weakest data gives the best policy</h3>
+  <p>We trained CDQAC and five other offline methods (behavior cloning, IQL, TD3-AWR and two Offline-LD variants) on four datasets, each produced by a different heuristic: priority dispatching rules (PDR), a genetic algorithm (GA), both combined, or uniformly random decisions. Averaged over all FJSP evaluation sets, CDQAC beats every other method on every dataset, and its best result comes from the random data, even though the random heuristic itself is by far the weakest.</p>
+
+  <figure class="dp-fig" aria-labelledby="fjsp-caption">
+    <p class="chart-title">Average gap on the FJSP evaluation sets, by training dataset</p>
+    <ul class="legend">
+      <li><i class="sw c-heur"></i>Data-generating heuristic (best)</li>
+      <li><i class="sw c-greedy"></i>CDQAC, greedy</li>
+      <li><i class="sw c-sample"></i>CDQAC, sampling</li>
+    </ul>
+    <div class="dp" role="group" aria-label="Dot plot of average gap by training dataset. Values are listed in the table below.">
+      <div class="dp-row story">
+        <span class="dp-name">Random</span>
+        <div class="dp-plot">
+          <span class="dp-track" style="--a:5.86;--b:28.16"></span>
+          <span class="dp-lbl end" style="--v:28.16">28.2%</span>
+          <span class="dp-lbl mid" style="--v:10.68">10.7%</span>
+          <span class="dp-lbl" style="--v:5.86">5.9%</span>
+          <button type="button" class="dp-dot c-heur" style="--v:28.16" data-ds="Random" data-s="Data-generating heuristic (best)" data-val="28.16%" aria-label="Random data, best of the data-generating heuristic: 28.16% gap"></button>
+          <button type="button" class="dp-dot c-greedy" style="--v:10.68" data-ds="Random" data-s="CDQAC, greedy" data-val="10.68%" aria-label="Random data, CDQAC greedy: 10.68% gap"></button>
+          <button type="button" class="dp-dot c-sample" style="--v:5.86" data-ds="Random" data-s="CDQAC, sampling" data-val="5.86%" aria-label="Random data, CDQAC sampling: 5.86% gap"></button>
+        </div>
+      </div>
+      <div class="dp-row">
+        <span class="dp-name">PDR</span>
+        <div class="dp-plot">
+          <span class="dp-track" style="--a:6.57;--b:14.13"></span>
+          <button type="button" class="dp-dot c-heur" style="--v:14.13" data-ds="PDR" data-s="Data-generating heuristic (best)" data-val="14.13%" aria-label="PDR data, best of the data-generating heuristic: 14.13% gap"></button>
+          <button type="button" class="dp-dot c-greedy" style="--v:12.34" data-ds="PDR" data-s="CDQAC, greedy" data-val="12.34%" aria-label="PDR data, CDQAC greedy: 12.34% gap"></button>
+          <button type="button" class="dp-dot c-sample" style="--v:6.57" data-ds="PDR" data-s="CDQAC, sampling" data-val="6.57%" aria-label="PDR data, CDQAC sampling: 6.57% gap"></button>
+        </div>
+      </div>
+      <div class="dp-row">
+        <span class="dp-name">GA</span>
+        <div class="dp-plot">
+          <span class="dp-track" style="--a:6.43;--b:13.06"></span>
+          <button type="button" class="dp-dot c-heur" style="--v:6.74" data-ds="GA" data-s="Data-generating heuristic (best)" data-val="6.74%" aria-label="GA data, best of the data-generating heuristic: 6.74% gap"></button>
+          <button type="button" class="dp-dot c-greedy" style="--v:13.06" data-ds="GA" data-s="CDQAC, greedy" data-val="13.06%" aria-label="GA data, CDQAC greedy: 13.06% gap"></button>
+          <button type="button" class="dp-dot c-sample" style="--v:6.43" data-ds="GA" data-s="CDQAC, sampling" data-val="6.43%" aria-label="GA data, CDQAC sampling: 6.43% gap"></button>
+        </div>
+      </div>
+      <div class="dp-row">
+        <span class="dp-name">PDR + GA</span>
+        <div class="dp-plot">
+          <span class="dp-track" style="--a:5.87;--b:11.31"></span>
+          <button type="button" class="dp-dot c-heur" style="--v:6.74" data-ds="PDR + GA" data-s="Data-generating heuristic (best)" data-val="6.74%" aria-label="PDR plus GA data, best of the data-generating heuristic: 6.74% gap"></button>
+          <button type="button" class="dp-dot c-greedy" style="--v:11.31" data-ds="PDR + GA" data-s="CDQAC, greedy" data-val="11.31%" aria-label="PDR plus GA data, CDQAC greedy: 11.31% gap"></button>
+          <button type="button" class="dp-dot c-sample" style="--v:5.87" data-ds="PDR + GA" data-s="CDQAC, sampling" data-val="5.87%" aria-label="PDR plus GA data, CDQAC sampling: 5.87% gap"></button>
+        </div>
+      </div>
+      <div class="dp-axis" aria-hidden="true">
+        <div class="dp-ticks" style="grid-column:2">
+          <span style="--t:0">0</span><span style="--t:5">5</span><span style="--t:10">10</span><span style="--t:15">15</span><span style="--t:20">20</span><span style="--t:25">25</span><span style="--t:30">30</span>
+        </div>
+        <p class="dp-axis-title">Average gap (%), lower is better</p>
+      </div>
+    </div>
+    <div class="dp-tip" hidden></div>
+
+    <div class="table-wrap">
+      <table>
+        <caption class="visually-hidden">Average gap (%) on the FJSP evaluation sets by training dataset</caption>
+        <thead>
+          <tr><th scope="col">Training data</th><th scope="col">Heuristic (best)</th><th scope="col">CDQAC, greedy</th><th scope="col">CDQAC, sampling</th><th scope="col">Best other, greedy</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Random</th><td>28.16</td><td>10.68</td><td>5.86</td><td>14.72 <span class="m">(TD3-AWR)</span></td></tr>
+          <tr><th scope="row">PDR</th><td>14.13</td><td>12.34</td><td>6.57</td><td>18.63 <span class="m">(TD3-AWR)</span></td></tr>
+          <tr><th scope="row">GA</th><td>6.74</td><td>13.06</td><td>6.43</td><td>13.91 <span class="m">(BC)</span></td></tr>
+          <tr><th scope="row">PDR + GA</th><td>6.74</td><td>11.31</td><td>5.87</td><td>15.29 <span class="m">(TD3-AWR)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption id="fjsp-caption">Average gap (%) to the optimal or best-known makespan over all FJSP evaluation sets; lower is better. Heuristic (best) is the best performance of the heuristics that produced each dataset; best other is the strongest of the other offline methods. Greedy decoding takes the highest-valued pair at every step; sampling keeps the best of 100 sampled schedules.</figcaption>
+  </figure>
+
+  <h3>Against online reinforcement learning</h3>
+  <p>CDQAC trained on random data also surpasses the state-of-the-art online RL baselines on the FJSP and JSP benchmarks, including DANIEL, the online method whose encoder it builds on. On the Taillard JSP benchmark:</p>
+  <div class="table-wrap">
+    <table class="jsp">
+      <caption class="visually-hidden">Mean gap (%) on the Taillard job shop benchmark</caption>
+      <thead>
+        <tr><th scope="col">Method</th><th scope="col">Type</th><th scope="col">Greedy</th><th scope="col">Sampling</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">MWR</th><td>dispatching rule</td><td>19.4</td><td>–</td></tr>
+        <tr><th scope="row">MOR</th><td>dispatching rule</td><td>19.9</td><td>–</td></tr>
+        <tr><th scope="row">L2D</th><td>online RL</td><td>27.3</td><td>–</td></tr>
+        <tr><th scope="row">Offline-LD</th><td>offline RL</td><td>25.6</td><td>–</td></tr>
+        <tr><th scope="row">DANIEL</th><td>online RL</td><td>18.2</td><td>14.4</td></tr>
+        <tr><th scope="row">Residual</th><td>online RL</td><td>17.0</td><td>14.6</td></tr>
+        <tr class="ours"><th scope="row">CDQAC (random data)</th><td>offline RL</td><td>15.2</td><td>11.7</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note" style="margin-top:0.8rem">Mean gap (%) on the Taillard benchmark, lower is better. For reference, exact MIP and CP solvers with a 30-minute limit per instance reach 8.4% and 2.0%. CDQAC was trained on the random 10×5 dataset. The paper also compares further JSP-specific methods.</p>
+
+  <h3>What each component contributes</h3>
+  <p>Removing the delayed policy update hurts most: the gap grows by 54.3% on average, and by 112.8% when training on 20×10 instances. The dueling architecture shows the same pattern at a smaller scale (8.9% on average, 16.7% on 20×10), while removing the quantile critic or the CQL penalty costs 4.2% and 2.5% on average.</p>
+
+  <figure class="paper-fig" aria-labelledby="fig4-caption">
+    <a class="fig-open" href="static/figures/cdqac-ablation-study.png" target="_blank" rel="noopener" tabindex="-1">
+      <img src="static/figures/cdqac-ablation-study-1408.webp"
+        srcset="static/figures/cdqac-ablation-study-704.webp 704w, static/figures/cdqac-ablation-study-1408.webp 1408w, static/figures/cdqac-ablation-study-2112.webp 2112w"
+        sizes="(min-width: 120rem) 68rem, (min-width: 48rem) calc(22.4rem + 45vw), calc(100vw - 3rem)"
+        width="1408" height="696" loading="lazy" decoding="async"
+        alt="Bar chart of the average relative increase in gap when one CDQAC component is removed, for training sizes 10x5, 15x10 and 20x10: without CQL 1.9%, 4.9% and 0.7% (average 2.5%); without the quantile critic 2.9%, 5.1% and 4.7% (average 4.2%); without the dueling architecture 4.3%, 5.8% and 16.7% (average 8.9%); without delayed policy updates 11.7%, 38.5% and 112.8% (average 54.3%).">
+    </a>
+    <figcaption id="fig4-caption">Average increase in gap, Δ(%), when one component of CDQAC is removed, for each training size; lower is better. <a href="static/figures/cdqac-ablation-study.png" target="_blank" rel="noopener">Open the figure at full size</a>.</figcaption>
+  </figure>
+
+  <h3>Sample efficiency</h3>
+  <p>CDQAC reaches competitive performance with 10 to 25 training instances, typically 1 to 5% of the data that online RL baselines train on. Dataset size barely matters: from 5 to 500 random training instances, the gap on the Brandimarte and Hurink FJSP benchmarks stays around 6% with sampling and moves by at most about one and a half percentage points with greedy decoding.</p>
+
+  <figure class="paper-fig" aria-labelledby="fig5-caption">
+    <a class="fig-open" href="static/figures/cdqac-sample-efficiency.png" target="_blank" rel="noopener" tabindex="-1">
+      <img src="static/figures/cdqac-sample-efficiency-1408.webp"
+        srcset="static/figures/cdqac-sample-efficiency-704.webp 704w, static/figures/cdqac-sample-efficiency-1408.webp 1408w, static/figures/cdqac-sample-efficiency-2112.webp 2112w"
+        sizes="(min-width: 120rem) 68rem, (min-width: 48rem) calc(22.4rem + 45vw), calc(100vw - 3rem)"
+        width="1408" height="868" loading="lazy" decoding="async"
+        alt="Grouped bar chart of the gap on the Brandimarte and Hurink FJSP benchmarks for 5, 25, 50, 125, 250, 375 and 500 training instances of the random dataset, for training sizes 10x5, 15x10 and 20x10: with greedy decoding the gap stays between about 10% and 13%, and with sampling around 6%, at every dataset size.">
+    </a>
+    <figcaption id="fig5-caption">Gap on the Brandimarte and Hurink FJSP benchmarks when CDQAC is trained on 5 to 500 instances of the random dataset, for three training sizes, with greedy decoding and sampling. <a href="static/figures/cdqac-sample-efficiency.png" target="_blank" rel="noopener">Open the figure at full size</a>.</figcaption>
+  </figure>
+</section>
+
+<section id="code-and-data" aria-labelledby="code-data-heading">
+  <h2 id="code-data-heading">Code, datasets and pretrained checkpoints</h2>
+  <p>Everything needed to reproduce the paper is public. The <a href="https://github.com/jesserem/CDQAC_scheduling">code on GitHub</a> (MIT license) trains CDQAC and the offline baselines (behavior cloning, IQL, TD3-AWR and both Offline-LD variants) from a single entry point. The <a href="https://huggingface.co/datasets/jesserem/cdqac_datasets">datasets and checkpoints on Hugging Face</a> hold the JSP and FJSP training data from every heuristic (dispatching rules, genetic algorithm, random and ε-greedy dispatching rules), the evaluation instances, and pretrained policies.</p>
+<pre><code>git clone https://github.com/jesserem/CDQAC_scheduling
+cd CDQAC_scheduling
+pip install -r requirements.txt
+python download_datasets.py eval checkpoints
+
+# Evaluate a pretrained CDQAC policy (trained on random FJSP data, 10×5)
+python eval_model.py checkpoints/fjsp/cdqac/cdqac_random_10_5.pt --eval_folder ./data/SD1/10x5</code></pre>
+</section>
+
+<section id="faq" class="faq" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">Frequently asked questions</h2>
+
+  <h3>What is offline reinforcement learning for scheduling?</h3>
+  <p>It trains a scheduling policy from a fixed dataset of past decisions instead of from trial and error in a simulator. The dataset can be historical schedules or solutions from existing heuristics. Unlike imitation learning, offline RL learns how valuable each decision is, so the policy can outperform the schedules it learned from.</p>
+
+  <h3>Can offline RL learn from random or suboptimal schedules?</h3>
+  <p>Yes. Trained on uniformly random solutions, CDQAC reaches a 5.9% average gap on the FJSP evaluation sets with sampling, its best result across the four training datasets, ahead of data from a genetic algorithm.</p>
+
+  <h3>Why does random data beat genetic-algorithm data here?</h3>
+  <p>Scheduling has a dense reward tied to the makespan and trajectories of equal length, so coverage, not quality, is the bottleneck. Random solutions contain 7.7 times as many unique state–action pairs as dispatching-rule solutions, against 2.96 times for the genetic algorithm, which gives the critic more to learn from.</p>
+
+  <h3>How much training data does CDQAC need?</h3>
+  <p>Competitive performance takes 10 to 25 training instances, typically 1 to 5% of the data online RL methods train on.</p>
+
+  <h3>Does CDQAC need a simulator or expert solutions?</h3>
+  <p>Not for training. It learns from a static dataset and does not need solutions from an exact solver. In the paper the datasets come from simple heuristics; in practice they could come from historical schedules.</p>
+
+  <h3>How does CDQAC compare with online RL methods such as DANIEL or L2D?</h3>
+  <p>Trained only on random data, CDQAC surpasses the online RL baselines in the paper. On the Taillard JSP benchmark its mean gap is 15.2% with greedy decoding, against 18.2% for DANIEL and 27.3% for L2D.</p>
+
+  <h3>How is CDQAC different from Offline-LD?</h3>
+  <p><a href="https://link.springer.com/article/10.1007/s10994-025-06826-w">Offline-LD</a> (Machine Learning, 2025) was the first end-to-end offline RL method for JSP and learned from high-quality solutions produced by a constraint programming solver. CDQAC learns from low-quality data, handles both JSP and FJSP, and combines a quantile critic with a separate actor, a dueling design and delayed policy updates.</p>
+
+  <h3>What are the limitations?</h3>
+  <p>Training directly on large FJSP instances (20×10) becomes unstable as the action space grows. Policies trained on small instances generalize well to larger ones, and factorizing the action space into separate operation and machine choices is a promising way to scale further.</p>
+</section>
+
+<section id="cite" aria-labelledby="cite-heading">
+  <h2 id="cite-heading">Cite this paper</h2>
+<pre><code id="bibtex">@article{remmerden2026generalizing,
+    title={Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Solutions},
+    author={Jesse van Remmerden and Zaharah Bukhsh and Yingqian Zhang},
+    journal={Transactions on Machine Learning Research},
+    issn={2835-8856},
+    year={2026},
+    url={https://openreview.net/forum?id=4vVhm4817Q}
+}</code></pre>
+  <p class="cite-actions"><button class="btn" id="copy-bib" type="button">Copy BibTeX</button></p>
+  <p class="note">Earlier arXiv versions of this paper were titled “Generalizing Beyond Suboptimality: Offline Reinforcement Learning Learns Effective Scheduling through Random Data”.</p>
+</section>
+
+<section aria-labelledby="related-heading">
+  <h2 id="related-heading">Related work</h2>
+  <ul class="refs">
+    <li><a href="https://link.springer.com/article/10.1007/s10994-025-06826-w">Offline Reinforcement Learning for Learning to Dispatch for Job Shop Scheduling</a> (Offline-LD). <span class="meta">J. van Remmerden, Z. Bukhsh, Y. Zhang. Machine Learning, 2025.</span> Our first offline RL method for JSP, trained on constraint programming solutions.</li>
+    <li><a href="https://doi.org/10.1109/TNNLS.2023.3306421">Flexible Job Shop Scheduling via Dual Attention Network-Based Reinforcement Learning</a> (DANIEL). <span class="meta">R. Wang, G. Wang, J. Sun, F. Deng, J. Chen. IEEE TNNLS, 2023.</span> Source of the DAN encoder and the FJSP environment.</li>
+    <li><a href="https://github.com/ai-for-decision-making-tue/Job_Shop_Scheduling_Benchmark_Environments_and_Instances">Job Shop Scheduling Benchmark: Environments and Instances for Learning and Non-learning Methods</a>. <span class="meta">R. Reijnen, K. van Straaten, Z. Bukhsh, Y. Zhang.</span> Used to generate the genetic-algorithm datasets.</li>
+  </ul>
+</section>
+</main>
+
+<footer>
+  <p>© 2026 Jesse van Remmerden, Zaharah Bukhsh and Yingqian Zhang, Eindhoven University of Technology. Code released under the MIT license.</p>
+  <p>Last updated 30 September 2026. Part of <a href="https://jesserem.github.io/">jesserem.github.io</a>.</p>
+</footer>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById("copy-bib");
+  var bib = document.getElementById("bibtex");
+  if (btn && bib) {
+    if (!navigator.clipboard) { btn.hidden = true; }
+    else {
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(bib.textContent.trim()).then(function () {
+          btn.textContent = "Copied";
+        }, function () {
+          btn.textContent = "Copy failed, select the text instead";
+        });
+        setTimeout(function () { btn.textContent = "Copy BibTeX"; }, 2200);
+      });
+    }
+  }
+
+  var fig = document.querySelector(".dp-fig");
+  if (!fig) return;
+  var tip = fig.querySelector(".dp-tip");
+  function show(el) {
+    var v = document.createElement("strong");
+    v.textContent = el.dataset.val;
+    var s = document.createElement("span");
+    s.textContent = el.dataset.s;
+    var d = document.createElement("span");
+    d.textContent = el.dataset.ds + " data";
+    tip.replaceChildren(v, s, d);
+    tip.hidden = false;
+    var fr = fig.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    var half = tip.offsetWidth / 2;
+    var x = r.left + r.width / 2 - fr.left;
+    x = Math.min(Math.max(x, half + 4), fr.width - half - 4);
+    tip.style.left = x + "px";
+    tip.style.top = (r.top - fr.top) + "px";
+  }
+  function hide() { tip.hidden = true; }
+  fig.querySelectorAll(".dp-dot").forEach(function (el) {
+    el.addEventListener("pointerenter", function () { show(el); });
+    el.addEventListener("pointerleave", hide);
+    el.addEventListener("focus", function () { show(el); });
+    el.addEventListener("blur", hide);
+  });
+})();
+</script>
+</body>
+</html>
