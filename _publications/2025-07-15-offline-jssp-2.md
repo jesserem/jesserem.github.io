@@ -9,6 +9,7 @@ venue: "Machine Learning"
 paperurl: "https://arxiv.org/abs/2409.10589"
 doi: "10.1007/s10994-025-06826-w"
 codeurl: "https://github.com/jesserem/Offline-LD"
+pdfurl: "/files/offline_jssp_paper.pdf"
 authors: "Jesse van Remmerden, Zaharah Bukhsh, Yingqian Zhang"
 citation: 'van Remmerden, J., Bukhsh, Z., & Zhang, Y. (2025). Offline reinforcement learning for learning to dispatch for job shop scheduling. Machine Learning, 114(8), 191. https://doi.org/10.1007/s10994-025-06826-w'
 ---

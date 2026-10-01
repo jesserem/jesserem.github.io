@@ -8,6 +8,7 @@ date: 2025-01-10
 venue: "Neural Computing and Applications"
 paperurl: "https://doi.org/10.1007/s00521-024-10954-0"
 doi: "10.1007/s00521-024-10954-0"
+pdfurl: "/files/multi_obj_paper.pdf"
 authors: "Jesse van Remmerden, Maurice Kenter, Diederik M. Roijers, Charalampos Andriotis, Yingqian Zhang, Zaharah Bukhsh"
 citation: "van Remmerden, J., Kenter, M., Roijers, D. M., Andriotis, C., Zhang, Y., & Bukhsh, Z. (2025). Deep multi-objective reinforcement learning for utility-based infrastructural maintenance optimization. Neural Computing and Applications. https://doi.org/10.1007/s00521-024-10954-0"
 ---
